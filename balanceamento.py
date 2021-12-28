@@ -69,7 +69,7 @@ def remove_user(qtd_users, umax, servers):
             del servers[i]
             return servers
         else:
-            qtd_users -= umax
+            qtd_users -= servers[i]
             del servers[i]
             i -= 1
         i += 1
@@ -89,17 +89,25 @@ def simulate(ttask, umax, new_users):
         tick += 1
         count_users += 1
         for user in user_tick:
-            if user[0] + ttask == tick:
-                servers = remove_user(user[1], umax, servers)
+            if user[1] + ttask == tick:
+                servers = remove_user(user[0], umax, servers)
         if count_users <= len(new_users) - 1:
             servers = add_user(new_users[count_users], umax, servers)
-        write_file(servers)
+            user_tick.append((new_users[count_users], tick))
+        if len(servers) > 0:
+            write_file(servers)
+        else:
+            write_file(0)
 
 
 def write_file(servers):
     output_file = open('output.txt', 'a')
-    output_file.write(str(servers)[1:-1] + '\n')
-    output_file.close()
+    if isinstance(servers, list):
+        output_file.write(str(servers)[1:-1] + '\n')
+        output_file.close()
+    else:
+        output_file.write(str(servers) + '\n')
+        output_file.close()
 
 
 def init():
