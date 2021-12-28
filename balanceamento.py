@@ -59,7 +59,7 @@ def add_user(qtd_users, umax, servers):
             return servers
 
 
-def remove_user(qtd_users, umax, servers):
+def remove_user(qtd_users, servers):
     i = 0
     while len(servers) > 0:
         if qtd_users < servers[i]:
@@ -76,13 +76,27 @@ def remove_user(qtd_users, umax, servers):
     return servers
 
 
+def cost_calculate(qtd_servers, real_qtd_servers, tick):
+    cost = 0
+    servers_excluded = len(qtd_servers) - real_qtd_servers
+    i = 0
+    while servers_excluded > 0:
+        cost += qtd_servers[i][0] * (tick - qtd_servers[i][1])
+        del qtd_servers[i]
+        servers_excluded -= 1
+    return cost, qtd_servers
+
+
 def simulate(ttask, umax, new_users):
     servers = []
     tick = 1
     user_tick = []
     count_users = 0
+    qtd_servers = []
+    cost = 0
     if len(new_users) > 0:
         servers = add_user(new_users[count_users], umax, servers)
+        qtd_servers.append((1, tick))
         user_tick.append((new_users[count_users], tick))
         write_file(servers)
     while len(servers) > 0:
@@ -90,14 +104,23 @@ def simulate(ttask, umax, new_users):
         count_users += 1
         for user in user_tick:
             if user[1] + ttask == tick:
-                servers = remove_user(user[0], umax, servers)
+                servers = remove_user(user[0], servers)
+                if len(servers) < len(qtd_servers):
+                    partial_cost, qtd_servers = cost_calculate(qtd_servers, len(servers), tick)
+                    cost += partial_cost
         if count_users <= len(new_users) - 1:
             servers = add_user(new_users[count_users], umax, servers)
+            total_servers_in_list = 0
+            for server in qtd_servers:
+                total_servers_in_list += server[0]
+            if len(servers) > total_servers_in_list:
+                qtd_servers.append((len(servers) - total_servers_in_list, tick))
             user_tick.append((new_users[count_users], tick))
         if len(servers) > 0:
             write_file(servers)
         else:
             write_file(0)
+    write_file(cost)
 
 
 def write_file(servers):
