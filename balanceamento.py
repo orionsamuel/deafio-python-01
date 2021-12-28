@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 
 
-def read_file():
-    input_file = open('input.txt', 'r')
+def read_file(file):
+    input_file = open(file, 'r')
     count, ttask, umax = 0, 0, 0
     new_users = []
     for line in input_file:
@@ -21,17 +21,29 @@ def read_file():
 
 def add_user(qtd_users, umax, servers):
     new_server = False
-    for i in range(len(servers)):
-        if servers[i] < umax:
-            new_server = False
-            if qtd_users <= umax - servers[i]:
-                servers[i] = servers[i] + qtd_users
-                return servers
-            else:
-                qtd_users -= umax - servers[i]
-                servers[i] = umax
+    if qtd_users == 0:
+        return servers
+    if len(servers) == 0:
+        if qtd_users <= umax:
+            servers.append(qtd_users)
+            return servers
         else:
+            servers.append(umax)
+            qtd_users = qtd_users - umax
             new_server = True
+    else:
+        for i in range(len(servers)):
+            if servers[i] < umax:
+                new_server = False
+                if qtd_users <= umax - servers[i]:
+                    servers[i] = servers[i] + qtd_users
+                    return servers
+                else:
+                    qtd_users -= umax - servers[i]
+                    servers[i] = umax
+        if qtd_users > 0:
+            new_server = True
+
     if new_server:
         if qtd_users <= umax:
             servers.append(qtd_users)
@@ -48,7 +60,8 @@ def add_user(qtd_users, umax, servers):
 
 
 def remove_user(qtd_users, umax, servers):
-    for i in range(len(servers)):
+    i = 0
+    while len(servers) > 0:
         if qtd_users < servers[i]:
             servers[i] = servers[i] - qtd_users
             return servers
@@ -58,28 +71,43 @@ def remove_user(qtd_users, umax, servers):
         else:
             qtd_users -= umax
             del servers[i]
+            i -= 1
+        i += 1
     return servers
 
 
 def simulate(ttask, umax, new_users):
     servers = []
     tick = 1
+    user_tick = []
     count_users = 0
-    servers = add_user(new_users[count_users], umax, servers)
+    if len(new_users) > 0:
+        servers = add_user(new_users[count_users], umax, servers)
+        user_tick.append((new_users[count_users], tick))
+        write_file(servers)
     while len(servers) > 0:
         tick += 1
         count_users += 1
+        for user in user_tick:
+            if user[0] + ttask == tick:
+                servers = remove_user(user[1], umax, servers)
+        if count_users <= len(new_users) - 1:
+            servers = add_user(new_users[count_users], umax, servers)
+        write_file(servers)
 
 
-def write_file(line):
-    output_file = ('output.tx', 'a')
-    output_file.write(line)
+def write_file(servers):
+    output_file = open('output.txt', 'a')
+    output_file.write(str(servers)[1:-1] + '\n')
+    output_file.close()
+
 
 def init():
-    ttask, umax, new_users = read_file()
+    ttask, umax, new_users = read_file('input.txt')
     output_file = Path('output.txt')
     if output_file.is_file():
         os.remove(output_file)
+    simulate(ttask, umax, new_users)
 
 
 if __name__ == '__main__':
