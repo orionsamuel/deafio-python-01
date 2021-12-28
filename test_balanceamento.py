@@ -2,8 +2,9 @@ import pytest
 
 from balanceamento import read_file, add_user, remove_user, cost_calculate
 
+
 def test_read_file():
-    expected_ttask, expected_umax, expected_new_users = 4, 2, [1,3,0,1,0,1]
+    expected_ttask, expected_umax, expected_new_users = 4, 2, [1, 3, 0, 1, 0, 1]
     actual_ttask, actual_umax, actual_new_users = read_file('input.txt')
     assert actual_ttask == expected_ttask
     assert actual_umax == expected_umax
@@ -30,7 +31,6 @@ def test_add_server_one():
 
 def test_add_server_full():
     expected = [2, 2]
-    actual = add_user(1, 2, [])
     actual = add_user(3, 2, [1])
     assert actual == expected
 
