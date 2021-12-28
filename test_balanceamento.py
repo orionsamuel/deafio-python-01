@@ -1,5 +1,3 @@
-import pytest
-
 from balanceamento import read_file, add_user, remove_user, cost_calculate
 
 
